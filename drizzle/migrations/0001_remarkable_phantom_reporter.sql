@@ -1,0 +1,1 @@
+CREATE INDEX "idx_exercise_knowledge_next_review" ON "exercise_knowledge" USING btree ("next_review");
