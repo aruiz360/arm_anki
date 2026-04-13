@@ -1,0 +1,69 @@
+[
+  {
+    "id": "mock-fill-1",
+    "type": "FILL_IN",
+    "content": {
+      "prompt": "Hallo, [[1]] Tag. Ich [[2]] Andres und ich bin 27 Jahre [[3]].",
+      "blanks": [
+        { "correct": ["guten"],         "distractors": ["lecker", "kleinen"] },
+        { "correct": ["heisse", "bin"], "distractors": ["name", "esse"] },
+        { "correct": ["alt"],           "distractors": ["gross", "geboren"] }
+      ]
+    }
+  },
+  {
+    "id": "mock-fill-2",
+    "type": "FILL_IN",
+    "content": {
+      "prompt": "Ich [[1]] aus Deutschland. Wo [[2]] du?",
+      "blanks": [
+        { "correct": ["komme"],  "distractors": ["gehe", "fahre"] },
+        { "correct": ["kommst"], "distractors": ["gehst", "bist"] }
+      ]
+    }
+  },
+  {
+    "id": "mock-fill-3",
+    "type": "FILL_IN",
+    "content": {
+      "prompt": "Das [[1]] mein Bruder. Er [[2]] Fussball sehr [[3]].",
+      "blanks": [
+        { "correct": ["ist"],          "distractors": ["hat", "sind"] },
+        { "correct": ["spielt", "mag"], "distractors": ["isst", "schreibt"] },
+        { "correct": ["gern"],         "distractors": ["gut", "schnell"] }
+      ]
+    }
+  },
+  {
+    "id": "mock-order-1",
+    "type": "ORDER",
+    "content": {
+      "validSentences": [
+        "Ich heisse Andres und ich bin 27 Jahre alt.",
+        "Ich bin 27 Jahre alt und ich heisse Andres."
+      ],
+      "tokens": ["Ich", "heisse", "Andres", "und", "ich", "bin", "27 Jahre alt", "."]
+    }
+  },
+  {
+    "id": "mock-order-2",
+    "type": "ORDER",
+    "content": {
+      "validSentences": [
+        "Mein Name ist Klaus und ich komme aus Berlin."
+      ],
+      "tokens": ["Mein Name", "ist", "Klaus", "und", "ich", "komme", "aus Berlin", "."]
+    }
+  },
+  {
+    "id": "mock-order-3",
+    "type": "ORDER",
+    "content": {
+      "validSentences": [
+        "Am Montag gehe ich in die Schule.",
+        "Ich gehe am Montag in die Schule."
+      ],
+      "tokens": ["Am Montag", "gehe", "ich", "in die Schule", "."]
+    }
+  }
+]
