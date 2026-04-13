@@ -9,4 +9,4 @@ export function getExerciseRepository(): IExerciseRepository {
   return new DbExerciseRepository()
 }
 
-export type { IExerciseRepository, Exercise } from './types'
+export type { IExerciseRepository, Exercise, ExerciseWithProgress } from './types'

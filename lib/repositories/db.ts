@@ -1,8 +1,8 @@
-import type { IExerciseRepository, Exercise } from './types'
+import type { IExerciseRepository, Exercise, ExerciseWithProgress } from './types'
 import { ExerciseContent } from '../db/types'
 import { db } from '../db'
 import { exercises, exerciseKnowledge } from '../db/schema'
-import { sql } from 'drizzle-orm'
+import { sql, eq, leftJoin } from 'drizzle-orm'
 
 export class DbExerciseRepository implements IExerciseRepository {
   async getNextExercise(): Promise<Exercise | null> {
@@ -17,6 +17,23 @@ export class DbExerciseRepository implements IExerciseRepository {
   async getAll(): Promise<Exercise[]> {
     const rows = await db.select().from(exercises)
     return rows.map((row) => this.parse(row))
+  }
+
+  async getAllWithProgress(): Promise<ExerciseWithProgress[]> {
+    const rows = await db
+      .select({
+        exercise: exercises,
+        reps:       exerciseKnowledge.reps,
+        lastReview: exerciseKnowledge.lastReview,
+      })
+      .from(exercises)
+      .leftJoin(exerciseKnowledge, eq(exercises.id, exerciseKnowledge.exerciseId))
+
+    return rows.map(({ exercise, reps, lastReview }) => ({
+      ...this.parse(exercise),
+      reps:       reps       ?? 0,
+      lastReview: lastReview ?? null,
+    }))
   }
 
   async recordScore(exerciseId: string, score: number): Promise<void> {

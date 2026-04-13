@@ -9,6 +9,14 @@ export type Exercise =
   | { id: string; type: 'ORDER';   content: OrderContent }
 
 // ---------------------------------------------------------------------------
+// Exercise + its review progress (for the checklist UI)
+// ---------------------------------------------------------------------------
+export type ExerciseWithProgress = Exercise & {
+  reps: number
+  lastReview: Date | null
+}
+
+// ---------------------------------------------------------------------------
 // Repository interface — swap implementations via MOCKING_DATA env var.
 // ---------------------------------------------------------------------------
 export interface IExerciseRepository {
@@ -17,6 +25,9 @@ export interface IExerciseRepository {
 
   /** Return all exercises (useful for browsing / dev). */
   getAll(): Promise<Exercise[]>
+
+  /** Return all exercises with their review progress (for the checklist). */
+  getAllWithProgress(): Promise<ExerciseWithProgress[]>
 
   /**
    * Record the result of a review attempt.

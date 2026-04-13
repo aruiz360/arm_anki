@@ -1,4 +1,4 @@
-import type { IExerciseRepository, Exercise } from './types'
+import type { IExerciseRepository, Exercise, ExerciseWithProgress } from './types'
 import data from '../mocks/exercises.json'
 
 const exercises = data as Exercise[]
@@ -12,6 +12,10 @@ export class MockExerciseRepository implements IExerciseRepository {
 
   async getAll(): Promise<Exercise[]> {
     return exercises
+  }
+
+  async getAllWithProgress(): Promise<ExerciseWithProgress[]> {
+    return exercises.map((ex) => ({ ...ex, reps: 0, lastReview: null }))
   }
 
   async recordScore(exerciseId: string, score: number): Promise<void> {
