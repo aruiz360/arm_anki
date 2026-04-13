@@ -1,7 +1,8 @@
 import type { IExerciseRepository, Exercise } from './types'
 import { ExerciseContent } from '../db/types'
 import { db } from '../db'
-import { exercises } from '../db/schema'
+import { exercises, exerciseKnowledge } from '../db/schema'
+import { sql } from 'drizzle-orm'
 
 export class DbExerciseRepository implements IExerciseRepository {
   async getNextExercise(): Promise<Exercise | null> {
@@ -19,11 +20,40 @@ export class DbExerciseRepository implements IExerciseRepository {
   }
 
   async recordScore(exerciseId: string, score: number): Promise<void> {
-    // TODO: implement FSRS scheduling logic here
-    // 1. fetch current exercise_knowledge row (or create if NEW)
-    // 2. run FSRS algorithm with score to get new stability, difficulty, nextReview
-    // 3. upsert exercise_knowledge
-    console.log(`[db] recordScore — exerciseId: ${exerciseId}, score: ${score}`)
+    const now = new Date()
+
+    // Placeholder scheduling: +1 day on correct, +10 min on wrong.
+    // TODO: replace with real FSRS algorithm.
+    const nextReview = new Date(
+      now.getTime() + (score === 1 ? 24 * 60 * 60 * 1000 : 10 * 60 * 1000)
+    )
+
+    await db
+      .insert(exerciseKnowledge)
+      .values({
+        exerciseId,
+        state:      'LEARNING',
+        stability:  score,
+        difficulty: 1 - score,
+        reps:       1,
+        lapses:     score < 1 ? 1 : 0,
+        lastReview: now,
+        nextReview,
+        updatedAt:  now,
+      })
+      .onConflictDoUpdate({
+        target: exerciseKnowledge.exerciseId,
+        set: {
+          state:      'LEARNING',
+          reps:       sql`${exerciseKnowledge.reps} + 1`,
+          lapses:     score < 1
+            ? sql`${exerciseKnowledge.lapses} + 1`
+            : exerciseKnowledge.lapses,
+          lastReview: now,
+          nextReview,
+          updatedAt:  now,
+        },
+      })
   }
 
   private parse(row: typeof exercises.$inferSelect): Exercise {

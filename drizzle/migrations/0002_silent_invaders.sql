@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "uq_exercise_knowledge_exercise_id" ON "exercise_knowledge" USING btree ("exercise_id");

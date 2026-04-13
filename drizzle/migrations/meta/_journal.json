@@ -15,6 +15,13 @@
       "when": 1776107876266,
       "tag": "0001_remarkable_phantom_reporter",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776109517331,
+      "tag": "0002_silent_invaders",
+      "breakpoints": true
     }
   ]
 }

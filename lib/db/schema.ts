@@ -8,6 +8,7 @@ import {
   real,
   timestamp,
   index,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 import type { FillInContent, OrderContent } from './types'
@@ -54,6 +55,7 @@ export const exerciseKnowledge = pgTable('exercise_knowledge', {
 
   updatedAt:  timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
+  uniqueIndex('uq_exercise_knowledge_exercise_id').on(t.exerciseId),
   index('idx_exercise_knowledge_next_review').on(t.nextReview),
 ])
 
