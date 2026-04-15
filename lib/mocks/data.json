@@ -1,0 +1,146 @@
+{
+  "tokenTypes": [
+    { "id": "tt-pronomen",    "label": "Pronomen",    "color": "#6366f1" },
+    { "id": "tt-verb",        "label": "Verb",        "color": "#10b981" },
+    { "id": "tt-nomen",       "label": "Nomen",       "color": "#f59e0b" },
+    { "id": "tt-adjektiv",    "label": "Adjektiv",    "color": "#ec4899" },
+    { "id": "tt-adverb",      "label": "Adverb",      "color": "#8b5cf6" },
+    { "id": "tt-praeposition","label": "Präposition", "color": "#06b6d4" },
+    { "id": "tt-konjunktion", "label": "Konjunktion", "color": "#64748b" },
+    { "id": "tt-phrase",      "label": "Phrase",      "color": "#0ea5e9" },
+    { "id": "tt-satzzeichen", "label": "Satzzeichen", "color": "#9ca3af" }
+  ],
+
+  "tokens": [
+    { "id": "tk-Ich",         "text": "Ich",          "typeId": "tt-pronomen" },
+    { "id": "tk-ich",         "text": "ich",          "typeId": "tt-pronomen" },
+    { "id": "tk-du",          "text": "du",           "typeId": "tt-pronomen" },
+    { "id": "tk-das",         "text": "Das",          "typeId": "tt-pronomen" },
+    { "id": "tk-er",          "text": "Er",           "typeId": "tt-pronomen" },
+
+    { "id": "tk-heisse",      "text": "heisse",       "typeId": "tt-verb" },
+    { "id": "tk-bin",         "text": "bin",          "typeId": "tt-verb" },
+    { "id": "tk-ist",         "text": "ist",          "typeId": "tt-verb" },
+    { "id": "tk-komme",       "text": "komme",        "typeId": "tt-verb" },
+    { "id": "tk-kommst",      "text": "kommst",       "typeId": "tt-verb" },
+    { "id": "tk-gehe",        "text": "gehe",         "typeId": "tt-verb" },
+    { "id": "tk-gehst",       "text": "gehst",        "typeId": "tt-verb" },
+    { "id": "tk-fahre",       "text": "fahre",        "typeId": "tt-verb" },
+    { "id": "tk-esse",        "text": "esse",         "typeId": "tt-verb" },
+    { "id": "tk-hat",         "text": "hat",          "typeId": "tt-verb" },
+    { "id": "tk-sind",        "text": "sind",         "typeId": "tt-verb" },
+    { "id": "tk-spielt",      "text": "spielt",       "typeId": "tt-verb" },
+    { "id": "tk-mag",         "text": "mag",          "typeId": "tt-verb" },
+    { "id": "tk-isst",        "text": "isst",         "typeId": "tt-verb" },
+    { "id": "tk-schreibt",    "text": "schreibt",     "typeId": "tt-verb" },
+    { "id": "tk-bist",        "text": "bist",         "typeId": "tt-verb" },
+
+    { "id": "tk-Andres",      "text": "Andres",       "typeId": "tt-nomen" },
+    { "id": "tk-Klaus",       "text": "Klaus",        "typeId": "tt-nomen" },
+    { "id": "tk-Tag",         "text": "Tag",          "typeId": "tt-nomen" },
+    { "id": "tk-Fussball",    "text": "Fussball",     "typeId": "tt-nomen" },
+    { "id": "tk-Bruder",      "text": "Bruder",       "typeId": "tt-nomen" },
+    { "id": "tk-name",        "text": "name",         "typeId": "tt-nomen" },
+
+    { "id": "tk-guten",       "text": "guten",        "typeId": "tt-adjektiv" },
+    { "id": "tk-lecker",      "text": "lecker",       "typeId": "tt-adjektiv" },
+    { "id": "tk-kleinen",     "text": "kleinen",      "typeId": "tt-adjektiv" },
+    { "id": "tk-alt",         "text": "alt",          "typeId": "tt-adjektiv" },
+    { "id": "tk-gross",       "text": "gross",        "typeId": "tt-adjektiv" },
+    { "id": "tk-geboren",     "text": "geboren",      "typeId": "tt-adjektiv" },
+    { "id": "tk-gut",         "text": "gut",          "typeId": "tt-adjektiv" },
+    { "id": "tk-schnell",     "text": "schnell",      "typeId": "tt-adjektiv" },
+
+    { "id": "tk-gern",        "text": "gern",         "typeId": "tt-adverb" },
+    { "id": "tk-sehr",        "text": "sehr",         "typeId": "tt-adverb" },
+    { "id": "tk-wo",          "text": "Wo",           "typeId": "tt-adverb" },
+    { "id": "tk-heute",       "text": "heute",        "typeId": "tt-adverb" },
+
+    { "id": "tk-aus",         "text": "aus",          "typeId": "tt-praeposition" },
+
+    { "id": "tk-und",         "text": "und",          "typeId": "tt-konjunktion" },
+
+    { "id": "tk-27JahreAlt",      "text": "27 Jahre alt",        "typeId": "tt-phrase" },
+    { "id": "tk-MeinName",        "text": "Mein Name",           "typeId": "tt-phrase" },
+    { "id": "tk-AusBerlin",       "text": "aus Berlin",          "typeId": "tt-phrase" },
+    { "id": "tk-ausDeutschland",  "text": "aus Deutschland",     "typeId": "tt-phrase" },
+    { "id": "tk-AmMontag",        "text": "Am Montag",           "typeId": "tt-phrase" },
+    { "id": "tk-InDieSchule",     "text": "in die Schule",       "typeId": "tt-phrase" },
+
+    { "id": "tk-period",      "text": ".",            "typeId": "tt-satzzeichen" },
+    { "id": "tk-questionmark","text": "?",            "typeId": "tt-satzzeichen" }
+  ],
+
+  "sentences": [],
+
+  "exercises": [
+    {
+      "id":   "ex-fill-1",
+      "type": "FILL_IN",
+      "content": {
+        "prompt": "Hallo, [[1]] Tag. Ich [[2]] Andres und ich bin 27 Jahre [[3]].",
+        "blanks": [
+          { "correctIds": ["tk-guten"],             "distractorIds": ["tk-lecker", "tk-kleinen"] },
+          { "correctIds": ["tk-heisse", "tk-bin"],  "distractorIds": ["tk-name", "tk-esse"] },
+          { "correctIds": ["tk-alt"],               "distractorIds": ["tk-gross", "tk-geboren"] }
+        ]
+      }
+    },
+    {
+      "id":   "ex-fill-2",
+      "type": "FILL_IN",
+      "content": {
+        "prompt": "Ich [[1]] aus Deutschland. Wo [[2]] du?",
+        "blanks": [
+          { "correctIds": ["tk-komme"],  "distractorIds": ["tk-gehe", "tk-fahre"] },
+          { "correctIds": ["tk-kommst"], "distractorIds": ["tk-gehst", "tk-bist"] }
+        ]
+      }
+    },
+    {
+      "id":   "ex-fill-3",
+      "type": "FILL_IN",
+      "content": {
+        "prompt": "Das [[1]] mein Bruder. Er [[2]] Fussball sehr [[3]].",
+        "blanks": [
+          { "correctIds": ["tk-ist"],              "distractorIds": ["tk-hat", "tk-sind"] },
+          { "correctIds": ["tk-spielt", "tk-mag"], "distractorIds": ["tk-isst", "tk-schreibt"] },
+          { "correctIds": ["tk-gern"],             "distractorIds": ["tk-gut", "tk-schnell"] }
+        ]
+      }
+    },
+
+    {
+      "id":   "ex-order-1",
+      "type": "ORDER",
+      "content": {
+        "tokenIds": ["tk-Ich", "tk-heisse", "tk-Andres", "tk-und", "tk-ich", "tk-bin", "tk-27JahreAlt", "tk-period"],
+        "validOrderings": [
+          ["tk-Ich", "tk-heisse", "tk-Andres", "tk-und", "tk-ich", "tk-bin", "tk-27JahreAlt", "tk-period"],
+          ["tk-Ich", "tk-bin", "tk-27JahreAlt", "tk-und", "tk-ich", "tk-heisse", "tk-Andres", "tk-period"]
+        ]
+      }
+    },
+    {
+      "id":   "ex-order-2",
+      "type": "ORDER",
+      "content": {
+        "tokenIds": ["tk-MeinName", "tk-ist", "tk-Klaus", "tk-und", "tk-ich", "tk-komme", "tk-AusBerlin", "tk-period"],
+        "validOrderings": [
+          ["tk-MeinName", "tk-ist", "tk-Klaus", "tk-und", "tk-ich", "tk-komme", "tk-AusBerlin", "tk-period"]
+        ]
+      }
+    },
+    {
+      "id":   "ex-order-3",
+      "type": "ORDER",
+      "content": {
+        "tokenIds": ["tk-AmMontag", "tk-gehe", "tk-ich", "tk-InDieSchule", "tk-period"],
+        "validOrderings": [
+          ["tk-AmMontag", "tk-gehe", "tk-ich", "tk-InDieSchule", "tk-period"],
+          ["tk-ich", "tk-gehe", "tk-AmMontag", "tk-InDieSchule", "tk-period"]
+        ]
+      }
+    }
+  ]
+}

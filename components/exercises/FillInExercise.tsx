@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import type { FillInContent } from '@/lib/db/types'
+import type { FillInDisplay } from '@/lib/repositories'
 
 interface Props {
   id: string
-  content: FillInContent
+  content: FillInDisplay
   onResult: (score: 0 | 1) => void
 }
 

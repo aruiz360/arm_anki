@@ -1,19 +1,23 @@
 import type { ExerciseWithProgress } from '@/lib/repositories'
-import type { FillInContent, OrderContent } from '@/lib/db/types'
 
 interface Props {
   exercises: ExerciseWithProgress[]
 }
 
+function buildSentence(tokens: string[]) {
+  return tokens.reduce((acc, token) => {
+    if (!acc) return token
+    if (/^[.,!?;:]/.test(token)) return acc + token
+    return acc + ' ' + token
+  }, '')
+}
+
 function exercisePreview(ex: ExerciseWithProgress): string {
   if (ex.type === 'FILL_IN') {
-    const content = ex.content as FillInContent
-    // Show the prompt with blanks replaced by underscores
-    return content.prompt.replace(/\[\[\d+\]\]/g, '___').slice(0, 60) + '…'
-  } else {
-    const content = ex.content as OrderContent
-    return content.validSentences[0].slice(0, 60) + '…'
+    return ex.content.prompt.replace(/\[\[\d+\]\]/g, '___').slice(0, 60) + '…'
   }
+  const first = ex.content.validOrderings[0] ?? []
+  return buildSentence(first).slice(0, 60) + '…'
 }
 
 function timeAgo(date: Date): string {

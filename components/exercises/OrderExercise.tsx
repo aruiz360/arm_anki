@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import type { OrderContent } from '@/lib/db/types'
+import type { OrderDisplay } from '@/lib/repositories'
 
 interface Props {
   id: string
-  content: OrderContent
+  content: OrderDisplay
   onResult: (score: 0 | 1) => void
 }
 
@@ -13,10 +13,17 @@ function shuffled<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5)
 }
 
+function buildSentence(tokens: string[]) {
+  return tokens.reduce((acc, token) => {
+    if (!acc) return token
+    if (/^[.,!?;:]/.test(token)) return acc + token
+    return acc + ' ' + token
+  }, '')
+}
+
 export default function OrderExercise({ id, content, onResult }: Props) {
   const shuffledTokens = useMemo(() => shuffled(content.tokens), [content.tokens])
 
-  // `arranged` = tokens the user has placed (in order), `pool` = remaining tokens
   const [arranged, setArranged] = useState<string[]>([])
   const [pool, setPool] = useState<string[]>(shuffledTokens)
   const [submitted, setSubmitted] = useState(false)
@@ -38,19 +45,13 @@ export default function OrderExercise({ id, content, onResult }: Props) {
     setPool((prev) => [...prev, token])
   }
 
-  function buildSentence(tokens: string[]) {
-    return tokens.reduce((acc, token) => {
-      if (!acc) return token
-      // don't add a space before punctuation tokens
-      if (/^[.,!?;:]/.test(token)) return acc + token
-      return acc + ' ' + token
-    }, '')
-  }
-
   function submit() {
     if (arranged.length !== content.tokens.length) return
-    const sentence = buildSentence(arranged)
-    const isCorrect = content.validSentences.some((valid) => valid === sentence)
+    const isCorrect = content.validOrderings.some(
+      (ord) =>
+        ord.length === arranged.length &&
+        ord.every((tok, i) => tok === arranged[i])
+    )
     setCorrect(isCorrect)
     setSubmitted(true)
     onResult(isCorrect ? 1 : 0)
@@ -118,9 +119,11 @@ export default function OrderExercise({ id, content, onResult }: Props) {
       {/* Feedback */}
       {submitted && !correct && (
         <div className="text-sm text-gray-600 bg-gray-50 rounded-xl p-4 space-y-1">
-          <p className="font-medium text-gray-700">Correct answer{content.validSentences.length > 1 ? 's' : ''}:</p>
-          {content.validSentences.map((s) => (
-            <p key={s} className="text-green-700">{s}</p>
+          <p className="font-medium text-gray-700">
+            Correct answer{content.validOrderings.length > 1 ? 's' : ''}:
+          </p>
+          {content.validOrderings.map((ordering, i) => (
+            <p key={i} className="text-green-700">{buildSentence(ordering)}</p>
           ))}
         </div>
       )}

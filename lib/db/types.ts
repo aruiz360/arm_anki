@@ -1,35 +1,34 @@
 import { z } from 'zod'
 
 // ---------------------------------------------------------------------------
-// FILL_IN
-// Each blank maps to one entry in `blanks`, in order of [[1]], [[2]], etc.
+// STORAGE TYPES — what gets written to the `content` jsonb column.
+// All references to tokens are by ID.
 // ---------------------------------------------------------------------------
+
+// FILL_IN: each blank lists which token IDs are correct and which are distractors.
 export const FillInContent = z.object({
   prompt: z.string(), // e.g. "Hallo, [[1]] Tag. Ich [[2]] Andres..."
   blanks: z.array(
     z.object({
-      correct: z.array(z.string()).min(1),     // one or more accepted answers
-      distractors: z.array(z.string()).min(1), // wrong options shown alongside
+      correctIds:    z.array(z.string()).min(1),
+      distractorIds: z.array(z.string()).min(1),
     })
   ).min(1),
 })
 
 export type FillInContent = z.infer<typeof FillInContent>
 
-// ---------------------------------------------------------------------------
-// ORDER
-// The user drags tokens into a correct sequence.
-// Multiple valid orderings are supported.
-// ---------------------------------------------------------------------------
+// ORDER: validOrderings are arrays of token IDs in accepted sequences.
+// `tokenIds` is the pool shown to the user (will be shuffled in the UI).
 export const OrderContent = z.object({
-  validSentences: z.array(z.string()).min(1), // all accepted full-sentence answers
-  tokens: z.array(z.string()).min(2),         // draggable pieces shown to the user
+  validOrderings: z.array(z.array(z.string()).min(1)).min(1),
+  tokenIds:       z.array(z.string()).min(2),
 })
 
 export type OrderContent = z.infer<typeof OrderContent>
 
 // ---------------------------------------------------------------------------
-// Discriminated union — use this to parse a raw DB row's `content` field.
+// Discriminated union for parsing raw DB rows.
 // ---------------------------------------------------------------------------
 export const ExerciseContent = z.discriminatedUnion('type', [
   z.object({ type: z.literal('FILL_IN'), content: FillInContent }),

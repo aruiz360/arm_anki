@@ -1,15 +1,41 @@
-import type { FillInContent, OrderContent } from '../db/types'
+// ---------------------------------------------------------------------------
+// DISPLAY-FACING TYPES — what repository methods return to the UI layer.
+// Token IDs from storage are pre-resolved to text so UI components stay simple.
+// ---------------------------------------------------------------------------
 
-// ---------------------------------------------------------------------------
-// Rich Exercise type — DB row + parsed content, discriminated on `type`.
-// Safe to serialize and pass from server components to client components.
-// ---------------------------------------------------------------------------
+export type TokenType = {
+  id: string
+  label: string
+  color: string | null
+}
+
+export type Token = {
+  id: string
+  text: string
+  type: TokenType
+}
+
+// FILL_IN for the UI: same shape as before — correct + distractors as strings.
+export type FillInDisplay = {
+  prompt: string
+  blanks: { correct: string[]; distractors: string[] }[]
+}
+
+// ORDER for the UI: validOrderings as arrays of strings (one per accepted answer),
+// tokens as the pool of strings to arrange.
+export type OrderDisplay = {
+  validOrderings: string[][]
+  tokens: string[]
+}
+
 export type Exercise =
-  | { id: string; type: 'FILL_IN'; content: FillInContent }
-  | { id: string; type: 'ORDER';   content: OrderContent }
+  | { id: string; type: 'FILL_IN'; content: FillInDisplay }
+  | { id: string; type: 'ORDER';   content: OrderDisplay }
 
 // ---------------------------------------------------------------------------
-// Exercise + its review progress (for the checklist UI)
+// Exercise + review progress (for the checklist UI)
+// With token-level FSRS, exercise "progress" is derived: reps = count of
+// session_exercises rows for this exercise.
 // ---------------------------------------------------------------------------
 export type ExerciseWithProgress = Exercise & {
   reps: number
@@ -17,22 +43,11 @@ export type ExerciseWithProgress = Exercise & {
 }
 
 // ---------------------------------------------------------------------------
-// Repository interface — swap implementations via MOCKING_DATA env var.
+// Repository interface
 // ---------------------------------------------------------------------------
 export interface IExerciseRepository {
-  /** Return one exercise to review (random for now, queue logic comes later). */
   getNextExercise(): Promise<Exercise | null>
-
-  /** Return all exercises (useful for browsing / dev). */
   getAll(): Promise<Exercise[]>
-
-  /** Return all exercises with their review progress (for the checklist). */
   getAllWithProgress(): Promise<ExerciseWithProgress[]>
-
-  /**
-   * Record the result of a review attempt.
-   * score: 0.0–1.0 (currently always 0 or 1)
-   * The DB implementation will run FSRS and update exercise_knowledge.
-   */
   recordScore(exerciseId: string, score: number): Promise<void>
 }

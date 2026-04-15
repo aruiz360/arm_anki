@@ -1,102 +1,84 @@
 import { config } from 'dotenv'
-config({ path: '.env.local' })
+config({ path: '.env' })
+
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { exercises } from '../lib/db/schema'
-import type { FillInContent, OrderContent } from '../lib/db/types'
+import {
+  tokenTypes,
+  tokens,
+  exercises,
+} from '../lib/db/schema'
+import mockData from '../lib/mocks/data.json'
 
 const client = postgres(process.env.DATABASE_URL!)
 const db = drizzle(client)
 
 // ---------------------------------------------------------------------------
-// FILL_IN exercises
-// ---------------------------------------------------------------------------
-const fillInExercises: { type: 'FILL_IN'; content: FillInContent }[] = [
-  {
-    type: 'FILL_IN',
-    content: {
-      prompt: 'Hallo, [[1]] Tag. Ich [[2]] Andres und ich bin 27 Jahre [[3]].',
-      blanks: [
-        { correct: ['guten'],          distractors: ['lecker', 'kleinen'] },
-        { correct: ['heisse', 'bin'],  distractors: ['name', 'esse'] },
-        { correct: ['alt'],            distractors: ['gross', 'geboren'] },
-      ],
-    },
-  },
-  {
-    type: 'FILL_IN',
-    content: {
-      prompt: 'Ich [[1]] aus Deutschland. Wo [[2]] du?',
-      blanks: [
-        { correct: ['komme'],  distractors: ['gehe', 'fahre'] },
-        { correct: ['kommst'], distractors: ['gehst', 'bist'] },
-      ],
-    },
-  },
-  {
-    type: 'FILL_IN',
-    content: {
-      prompt: 'Das [[1]] mein Bruder. Er [[2]] Fussball sehr [[3]].',
-      blanks: [
-        { correct: ['ist'],   distractors: ['hat', 'sind'] },
-        { correct: ['spielt', 'mag'], distractors: ['isst', 'schreibt'] },
-        { correct: ['gern'],  distractors: ['gut', 'schnell'] },
-      ],
-    },
-  },
-]
-
-// ---------------------------------------------------------------------------
-// ORDER exercises
-// ---------------------------------------------------------------------------
-const orderExercises: { type: 'ORDER'; content: OrderContent }[] = [
-  {
-    type: 'ORDER',
-    content: {
-      validSentences: [
-        'Ich heisse Andres und ich bin 27 Jahre alt.',
-        'Ich bin 27 Jahre alt und ich heisse Andres.',
-      ],
-      tokens: ['Ich', 'heisse', 'Andres', 'und', 'ich', 'bin', '27 Jahre alt', '.'],
-    },
-  },
-  {
-    type: 'ORDER',
-    content: {
-      validSentences: [
-        'Mein Name ist Klaus und ich komme aus Berlin.',
-      ],
-      tokens: ['Mein Name', 'ist', 'Klaus', 'und', 'ich', 'komme', 'aus Berlin', '.'],
-    },
-  },
-  {
-    type: 'ORDER',
-    content: {
-      validSentences: [
-        'Am Montag gehe ich in die Schule.',
-        'Ich gehe am Montag in die Schule.',
-      ],
-      tokens: ['Am Montag', 'gehe', 'ich', 'in die Schule', '.'],
-    },
-  },
-]
-
-// ---------------------------------------------------------------------------
-// Run
+// Seeds real tokens from the mock JSON. Token type & token IDs are mapped
+// from readable mock IDs (e.g. "tk-heisse") to generated UUIDs.
 // ---------------------------------------------------------------------------
 async function seed() {
-  console.log('🌱 Seeding exercises...')
+  console.log('🌱 Seeding…')
 
-  await db.delete(exercises) // wipe before re-seeding
+  // Wipe in FK-safe order
+  await db.delete(exercises)
+  await db.delete(tokens)
+  await db.delete(tokenTypes)
 
-  const rows = [...fillInExercises, ...orderExercises]
-  const inserted = await db.insert(exercises).values(rows).returning({ id: exercises.id, type: exercises.type })
+  // 1. token_types
+  const typeIdMap = new Map<string, string>()
+  const typeRows = await db
+    .insert(tokenTypes)
+    .values(mockData.tokenTypes.map((t) => ({
+      label:       t.label,
+      description: null,
+      color:       t.color,
+    })))
+    .returning()
+  mockData.tokenTypes.forEach((mock, i) => typeIdMap.set(mock.id, typeRows[i].id))
+  console.log(`  ✓ ${typeRows.length} token types`)
 
-  for (const row of inserted) {
-    console.log(`  ✓ [${row.type}] ${row.id}`)
-  }
+  // 2. tokens
+  const tokenIdMap = new Map<string, string>()
+  const tokenRows = await db
+    .insert(tokens)
+    .values(mockData.tokens.map((t) => ({
+      text:   t.text,
+      typeId: typeIdMap.get(t.typeId)!,
+    })))
+    .returning()
+  mockData.tokens.forEach((mock, i) => tokenIdMap.set(mock.id, tokenRows[i].id))
+  console.log(`  ✓ ${tokenRows.length} tokens`)
 
-  console.log(`\n✅ Seeded ${inserted.length} exercises.`)
+  // 3. exercises — rewrite content to use real token UUIDs
+  const remapped = mockData.exercises.map((ex) => {
+    if (ex.type === 'FILL_IN') {
+      return {
+        type: 'FILL_IN' as const,
+        content: {
+          prompt: (ex.content as any).prompt,
+          blanks: (ex.content as any).blanks.map((b: any) => ({
+            correctIds:    b.correctIds.map((id: string) => tokenIdMap.get(id)!),
+            distractorIds: b.distractorIds.map((id: string) => tokenIdMap.get(id)!),
+          })),
+        },
+      }
+    }
+    return {
+      type: 'ORDER' as const,
+      content: {
+        tokenIds: (ex.content as any).tokenIds.map((id: string) => tokenIdMap.get(id)!),
+        validOrderings: (ex.content as any).validOrderings.map((ord: string[]) =>
+          ord.map((id) => tokenIdMap.get(id)!)
+        ),
+      },
+    }
+  })
+
+  const exRows = await db.insert(exercises).values(remapped).returning({ id: exercises.id, type: exercises.type })
+  console.log(`  ✓ ${exRows.length} exercises`)
+
+  console.log(`\n✅ Seed complete.`)
   await client.end()
 }
 

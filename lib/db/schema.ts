@@ -3,6 +3,7 @@ import {
   pgEnum,
   uuid,
   text,
+  varchar,
   jsonb,
   integer,
   real,
@@ -26,37 +27,82 @@ export const fsrsStateEnum = pgEnum('fsrs_state', [
 ])
 
 // ---------------------------------------------------------------------------
-// exercises
-// `content` is a typed JSON blob — parse it with ExerciseContent (types.ts).
+// token_types  (flexible — you can INSERT new types at will)
 // ---------------------------------------------------------------------------
-export const exercises = pgTable('exercises', {
+export const tokenTypes = pgTable('token_types', {
+  id:          uuid('id').primaryKey().defaultRandom(),
+  label:       text('label').notNull(),
+  description: text('description'),
+  color:       varchar('color', { length: 16 }),
+  createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+// ---------------------------------------------------------------------------
+// tokens  (first-class linguistic fragments)
+// ---------------------------------------------------------------------------
+export const tokens = pgTable('tokens', {
   id:        uuid('id').primaryKey().defaultRandom(),
-  type:      exerciseTypeEnum('type').notNull(),
-  content:   jsonb('content').notNull().$type<FillInContent | OrderContent>(),
+  text:      text('text').notNull(),
+  typeId:    uuid('type_id').notNull().references(() => tokenTypes.id),
+  notes:     text('notes'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
 // ---------------------------------------------------------------------------
-// exercise_knowledge  (one row per exercise — FSRS state)
+// sentences  (source sentences that tokens belong to)
 // ---------------------------------------------------------------------------
-export const exerciseKnowledge = pgTable('exercise_knowledge', {
-  id:         uuid('id').primaryKey().defaultRandom(),
-  exerciseId: uuid('exercise_id').notNull().references(() => exercises.id, { onDelete: 'cascade' }),
+export const sentences = pgTable('sentences', {
+  id:        uuid('id').primaryKey().defaultRandom(),
+  fullText:  text('full_text').notNull(),
+  language:  varchar('language', { length: 8 }).notNull().default('de'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
 
-  // FSRS core fields
+// ---------------------------------------------------------------------------
+// sentence_tokens  (ordered tokens within a sentence)
+// ---------------------------------------------------------------------------
+export const sentenceTokens = pgTable('sentence_tokens', {
+  id:         uuid('id').primaryKey().defaultRandom(),
+  sentenceId: uuid('sentence_id').notNull().references(() => sentences.id, { onDelete: 'cascade' }),
+  tokenId:    uuid('token_id').notNull().references(() => tokens.id),
+  position:   integer('position').notNull(),
+}, (t) => [
+  uniqueIndex('uq_sentence_position').on(t.sentenceId, t.position),
+])
+
+// ---------------------------------------------------------------------------
+// exercises
+// `content` is a typed JSON blob — parse it with ExerciseContent (types.ts).
+// Content now holds TOKEN IDs, not raw strings.
+// ---------------------------------------------------------------------------
+export const exercises = pgTable('exercises', {
+  id:         uuid('id').primaryKey().defaultRandom(),
+  type:       exerciseTypeEnum('type').notNull(),
+  sentenceId: uuid('sentence_id').references(() => sentences.id, { onDelete: 'set null' }),
+  content:    jsonb('content').notNull().$type<FillInContent | OrderContent>(),
+  createdAt:  timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+// ---------------------------------------------------------------------------
+// token_knowledge  (one row per token — FSRS lives here, not on exercises)
+// ---------------------------------------------------------------------------
+export const tokenKnowledge = pgTable('token_knowledge', {
+  id:         uuid('id').primaryKey().defaultRandom(),
+  tokenId:    uuid('token_id').notNull().references(() => tokens.id, { onDelete: 'cascade' }),
+
   state:      fsrsStateEnum('state').notNull().default('NEW'),
-  stability:  real('stability').notNull().default(0),   // how long memory lasts (days)
-  difficulty: real('difficulty').notNull().default(0),  // 0–1, learner-specific
-  reps:       integer('reps').notNull().default(0),     // total review count
-  lapses:     integer('lapses').notNull().default(0),   // times marked forgotten
+  stability:  real('stability').notNull().default(0),
+  difficulty: real('difficulty').notNull().default(0),
+  reps:       integer('reps').notNull().default(0),
+  lapses:     integer('lapses').notNull().default(0),
 
   lastReview: timestamp('last_review', { withTimezone: true }),
-  nextReview: timestamp('next_review', { withTimezone: true }),  // indexed — drives the queue
+  nextReview: timestamp('next_review', { withTimezone: true }),
 
   updatedAt:  timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
-  uniqueIndex('uq_exercise_knowledge_exercise_id').on(t.exerciseId),
-  index('idx_exercise_knowledge_next_review').on(t.nextReview),
+  uniqueIndex('uq_token_knowledge_token_id').on(t.tokenId),
+  index('idx_token_knowledge_next_review').on(t.nextReview),
 ])
 
 // ---------------------------------------------------------------------------
@@ -69,32 +115,45 @@ export const sessions = pgTable('sessions', {
 })
 
 // ---------------------------------------------------------------------------
-// session_exercises  (join + per-attempt result)
+// session_exercises  (per-attempt record — score is exercise-level pass/fail)
 // ---------------------------------------------------------------------------
 export const sessionExercises = pgTable('session_exercises', {
-  id:          uuid('id').primaryKey().defaultRandom(),
-  sessionId:   uuid('session_id').notNull().references(() => sessions.id, { onDelete: 'cascade' }),
-  exerciseId:  uuid('exercise_id').notNull().references(() => exercises.id, { onDelete: 'cascade' }),
-  score:       real('score').notNull(),   // 0.0–1.0 — future-proof for gradient; currently 0 or 1
-  answeredAt:  timestamp('answered_at', { withTimezone: true }).notNull().defaultNow(),
+  id:         uuid('id').primaryKey().defaultRandom(),
+  sessionId:  uuid('session_id').notNull().references(() => sessions.id, { onDelete: 'cascade' }),
+  exerciseId: uuid('exercise_id').notNull().references(() => exercises.id, { onDelete: 'cascade' }),
+  score:      real('score').notNull(),
+  answeredAt: timestamp('answered_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
 // ---------------------------------------------------------------------------
-// Relations (for Drizzle relational queries)
+// Relations
 // ---------------------------------------------------------------------------
+export const tokenTypesRelations = relations(tokenTypes, ({ many }) => ({
+  tokens: many(tokens),
+}))
+
+export const tokensRelations = relations(tokens, ({ one }) => ({
+  type:      one(tokenTypes,     { fields: [tokens.typeId], references: [tokenTypes.id] }),
+  knowledge: one(tokenKnowledge, { fields: [tokens.id],     references: [tokenKnowledge.tokenId] }),
+}))
+
+export const sentencesRelations = relations(sentences, ({ many }) => ({
+  sentenceTokens: many(sentenceTokens),
+  exercises:      many(exercises),
+}))
+
+export const sentenceTokensRelations = relations(sentenceTokens, ({ one }) => ({
+  sentence: one(sentences, { fields: [sentenceTokens.sentenceId], references: [sentences.id] }),
+  token:    one(tokens,    { fields: [sentenceTokens.tokenId],    references: [tokens.id] }),
+}))
+
 export const exercisesRelations = relations(exercises, ({ one, many }) => ({
-  knowledge:       one(exerciseKnowledge, {
-    fields: [exercises.id],
-    references: [exerciseKnowledge.exerciseId],
-  }),
+  sentence:         one(sentences, { fields: [exercises.sentenceId], references: [sentences.id] }),
   sessionExercises: many(sessionExercises),
 }))
 
-export const exerciseKnowledgeRelations = relations(exerciseKnowledge, ({ one }) => ({
-  exercise: one(exercises, {
-    fields: [exerciseKnowledge.exerciseId],
-    references: [exercises.id],
-  }),
+export const tokenKnowledgeRelations = relations(tokenKnowledge, ({ one }) => ({
+  token: one(tokens, { fields: [tokenKnowledge.tokenId], references: [tokens.id] }),
 }))
 
 export const sessionsRelations = relations(sessions, ({ many }) => ({

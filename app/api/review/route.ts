@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { getExerciseRepository } from '@/lib/repositories'
 
 const Body = z.object({
-  exerciseId: z.string().uuid(),
+  exerciseId: z.string().min(1), // accepts both UUIDs and mock IDs
   score: z.number().min(0).max(1),
 })
 
