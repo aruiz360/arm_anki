@@ -64,6 +64,28 @@ async function seed() {
         },
       }
     }
+    if (ex.type === 'MULTI_SELECT') {
+      return {
+        type: 'MULTI_SELECT' as const,
+        content: {
+          prompt:        (ex.content as any).prompt,
+          correctIds:    (ex.content as any).correctIds.map((id: string) => tokenIdMap.get(id)!),
+          distractorIds: (ex.content as any).distractorIds.map((id: string) => tokenIdMap.get(id)!),
+        },
+      }
+    }
+    if (ex.type === 'COLOR_LABEL') {
+      return {
+        type: 'COLOR_LABEL' as const,
+        content: {
+          tokens: (ex.content as any).tokens.map((t: any) => ({
+            id:         tokenIdMap.get(t.id)!,
+            categoryId: t.categoryId,
+          })),
+          categories: (ex.content as any).categories,
+        },
+      }
+    }
     return {
       type: 'ORDER' as const,
       content: {
@@ -75,7 +97,9 @@ async function seed() {
     }
   })
 
-  const exRows = await db.insert(exercises).values(remapped).returning({ id: exercises.id, type: exercises.type })
+  const exRows = await db.insert(exercises).values(
+    remapped.map((ex) => ({ ...ex, active: true }))
+  ).returning({ id: exercises.id, type: exercises.type })
   console.log(`  ✓ ${exRows.length} exercises`)
 
   console.log(`\n✅ Seed complete.`)

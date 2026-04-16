@@ -1,5 +1,5 @@
 import type { IExerciseRepository, Exercise, ExerciseWithProgress } from './types'
-import type { FillInContent, OrderContent } from '../db/types'
+import type { FillInContent, OrderContent, MultiSelectContent, ColorLabelContent } from '../db/types'
 import { ExerciseContent } from '../db/types'
 import { db } from '../db'
 import {
@@ -7,12 +7,12 @@ import {
   tokens,
   tokenKnowledge,
 } from '../db/schema'
-import { sql, eq, inArray } from 'drizzle-orm'
+import { sql, eq, inArray, and } from 'drizzle-orm'
 
 type StoredExercise = {
   id: string
-  type: 'FILL_IN' | 'ORDER'
-  content: FillInContent | OrderContent
+  type: 'FILL_IN' | 'ORDER' | 'MULTI_SELECT' | 'COLOR_LABEL'
+  content: FillInContent | OrderContent | MultiSelectContent | ColorLabelContent
 }
 
 export class DbExerciseRepository implements IExerciseRepository {
@@ -27,7 +27,7 @@ export class DbExerciseRepository implements IExerciseRepository {
    */
   async getNextExercise(): Promise<Exercise | null> {
     const now = new Date()
-    const allRows   = await db.select().from(exercises)
+    const allRows   = await db.select().from(exercises).where(eq(exercises.active, true))
     const knowledge = await db.select().from(tokenKnowledge)
 
     const kByToken = new Map(knowledge.map((k) => [k.tokenId, k]))
@@ -46,7 +46,7 @@ export class DbExerciseRepository implements IExerciseRepository {
   }
 
   async getAll(): Promise<Exercise[]> {
-    const rows = await db.select().from(exercises)
+    const rows = await db.select().from(exercises).where(eq(exercises.active, true))
     return Promise.all(rows.map((row) => this.hydrate(row)))
   }
 
@@ -77,7 +77,7 @@ export class DbExerciseRepository implements IExerciseRepository {
         : null
 
       const hydrated = await this.hydrate(row)
-      result.push({ ...hydrated, reps, lastReview })
+      result.push({ ...hydrated, reps, lastReview, active: row.active })
     }
     return result
   }
@@ -140,9 +140,16 @@ export class DbExerciseRepository implements IExerciseRepository {
 
   private collectTokenIds(ex: StoredExercise): string[] {
     if (ex.type === 'FILL_IN') {
-      return ex.content.blanks.flatMap((b) => [...b.correctIds, ...b.distractorIds])
+      return (ex.content as FillInContent).blanks.flatMap((b) => [...b.correctIds, ...b.distractorIds])
     }
-    return ex.content.tokenIds
+    if (ex.type === 'MULTI_SELECT') {
+      const c = ex.content as MultiSelectContent
+      return [...c.correctIds, ...c.distractorIds]
+    }
+    if (ex.type === 'COLOR_LABEL') {
+      return (ex.content as ColorLabelContent).tokens.map((t) => t.id)
+    }
+    return (ex.content as OrderContent).tokenIds
   }
 
   private async hydrate(row: typeof exercises.$inferSelect): Promise<Exercise> {
@@ -160,24 +167,49 @@ export class DbExerciseRepository implements IExerciseRepository {
     }
 
     if (stored.type === 'FILL_IN') {
+      const c = stored.content as FillInContent
       return {
         id:   stored.id,
         type: 'FILL_IN',
         content: {
-          prompt: stored.content.prompt,
-          blanks: stored.content.blanks.map((b) => ({
+          prompt: c.prompt,
+          blanks: c.blanks.map((b) => ({
             correct:     b.correctIds.map(resolve),
             distractors: b.distractorIds.map(resolve),
           })),
         },
       }
     }
+    if (stored.type === 'ORDER') {
+      const c = stored.content as OrderContent
+      return {
+        id:   stored.id,
+        type: 'ORDER',
+        content: {
+          tokens:         c.tokenIds.map(resolve),
+          validOrderings: c.validOrderings.map((o) => o.map(resolve)),
+        },
+      }
+    }
+    if (stored.type === 'MULTI_SELECT') {
+      const c = stored.content as MultiSelectContent
+      return {
+        id:   stored.id,
+        type: 'MULTI_SELECT',
+        content: {
+          prompt:      c.prompt,
+          correct:     c.correctIds.map(resolve),
+          distractors: c.distractorIds.map(resolve),
+        },
+      }
+    }
+    const c = stored.content as ColorLabelContent
     return {
       id:   stored.id,
-      type: 'ORDER',
+      type: 'COLOR_LABEL',
       content: {
-        tokens:         stored.content.tokenIds.map(resolve),
-        validOrderings: stored.content.validOrderings.map((o) => o.map(resolve)),
+        tokens:     c.tokens.map((t) => ({ text: resolve(t.id), categoryId: t.categoryId })),
+        categories: c.categories,
       },
     }
   }

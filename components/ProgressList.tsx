@@ -16,8 +16,15 @@ function exercisePreview(ex: ExerciseWithProgress): string {
   if (ex.type === 'FILL_IN') {
     return ex.content.prompt.replace(/\[\[\d+\]\]/g, '___').slice(0, 60) + '…'
   }
-  const first = ex.content.validOrderings[0] ?? []
-  return buildSentence(first).slice(0, 60) + '…'
+  if (ex.type === 'ORDER') {
+    const first = ex.content.validOrderings[0] ?? []
+    return buildSentence(first).slice(0, 60) + '…'
+  }
+  if (ex.type === 'MULTI_SELECT') {
+    return ex.content.prompt.slice(0, 60) + '…'
+  }
+  // COLOR_LABEL: join all token texts
+  return buildSentence(ex.content.tokens.map((t) => t.text)).slice(0, 60) + '…'
 }
 
 function timeAgo(date: Date): string {
@@ -58,30 +65,41 @@ export default function ProgressList({ exercises }: Props) {
       {/* List */}
       <ul className="space-y-2">
         {exercises.map((ex) => {
-          const isDone = ex.reps > 0
+          const isDone     = ex.reps > 0
+          const isInactive = !ex.active
           return (
             <li
               key={ex.id}
-              className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100"
+              className={`flex items-center gap-3 p-3 rounded-xl border ${
+                isInactive
+                  ? 'bg-gray-50 border-gray-100 opacity-50'
+                  : 'bg-white border-gray-100'
+              }`}
             >
               {/* Status icon */}
               <span
                 className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                  isDone
-                    ? 'bg-green-100 text-green-600'
-                    : 'bg-gray-100 text-gray-300'
+                  isInactive
+                    ? 'bg-gray-100 text-gray-300'
+                    : isDone
+                      ? 'bg-green-100 text-green-600'
+                      : 'bg-gray-100 text-gray-300'
                 }`}
               >
-                {isDone ? '✓' : '○'}
+                {isInactive ? '–' : isDone ? '✓' : '○'}
               </span>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-700 truncate">{exercisePreview(ex)}</p>
+                <p className={`text-sm truncate ${isInactive ? 'text-gray-400' : 'text-gray-700'}`}>
+                  {exercisePreview(ex)}
+                </p>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  {isDone
-                    ? `${ex.reps} rep${ex.reps > 1 ? 's' : ''} · last ${timeAgo(ex.lastReview!)}`
-                    : 'Not yet reviewed'}
+                  {isInactive
+                    ? 'Inactive'
+                    : isDone
+                      ? `${ex.reps} rep${ex.reps > 1 ? 's' : ''} · last ${timeAgo(ex.lastReview!)}`
+                      : 'Not yet reviewed'}
                 </p>
               </div>
 
@@ -90,10 +108,20 @@ export default function ProgressList({ exercises }: Props) {
                 className={`flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${
                   ex.type === 'FILL_IN'
                     ? 'bg-purple-50 text-purple-600'
-                    : 'bg-orange-50 text-orange-600'
+                    : ex.type === 'ORDER'
+                      ? 'bg-orange-50 text-orange-600'
+                      : ex.type === 'MULTI_SELECT'
+                        ? 'bg-sky-50 text-sky-600'
+                        : 'bg-emerald-50 text-emerald-600'
                 }`}
               >
-                {ex.type === 'FILL_IN' ? 'Fill in' : 'Order'}
+                {ex.type === 'FILL_IN'
+                  ? 'Fill in'
+                  : ex.type === 'ORDER'
+                    ? 'Order'
+                    : ex.type === 'MULTI_SELECT'
+                      ? 'Multi'
+                      : 'Label'}
               </span>
             </li>
           )

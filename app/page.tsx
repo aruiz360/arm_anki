@@ -6,8 +6,9 @@ export default async function HomePage() {
   const repo = getExerciseRepository()
   const exercises = await repo.getAllWithProgress()
 
-  const done = exercises.filter((ex) => ex.reps > 0).length
-  const due  = exercises.filter((ex) => ex.reps === 0).length // simplified: not yet reviewed
+  const active = exercises.filter((ex) => ex.active)
+  const done   = active.filter((ex) => ex.reps > 0).length
+  const due    = active.filter((ex) => ex.reps === 0).length
 
   return (
     <main className="min-h-screen bg-gray-50 flex items-start justify-center pt-20 px-4">
@@ -28,7 +29,7 @@ export default async function HomePage() {
               {due > 0 ? `${due} exercise${due > 1 ? 's' : ''} to review` : 'All caught up!'}
             </p>
             <p className="text-sm text-gray-400 mt-0.5">
-              {done} of {exercises.length} completed
+              {done} of {active.length} active completed
             </p>
           </div>
           {due > 0 && (

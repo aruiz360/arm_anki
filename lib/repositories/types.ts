@@ -28,9 +28,34 @@ export type OrderDisplay = {
   tokens: string[]
 }
 
+// MULTI_SELECT for the UI: all options combined (correct + distractors) are
+// shuffled in the component; the component receives them split for evaluation.
+export type MultiSelectDisplay = {
+  prompt: string
+  correct: string[]
+  distractors: string[]
+}
+
+// COLOR_LABEL for the UI: tokens in sentence order, each with resolved text
+// and its correct category (null = context, not a target).
+// Categories carry the full label + hex color so the UI can render them.
+export type ColorLabelDisplay = {
+  tokens: Array<{
+    text:       string
+    categoryId: string | null
+  }>
+  categories: Array<{
+    id:    string
+    label: string
+    color: string
+  }>
+}
+
 export type Exercise =
-  | { id: string; type: 'FILL_IN'; content: FillInDisplay }
-  | { id: string; type: 'ORDER';   content: OrderDisplay }
+  | { id: string; type: 'FILL_IN';       content: FillInDisplay }
+  | { id: string; type: 'ORDER';          content: OrderDisplay }
+  | { id: string; type: 'MULTI_SELECT';   content: MultiSelectDisplay }
+  | { id: string; type: 'COLOR_LABEL';    content: ColorLabelDisplay }
 
 // ---------------------------------------------------------------------------
 // Exercise + review progress (for the checklist UI)
@@ -40,6 +65,7 @@ export type Exercise =
 export type ExerciseWithProgress = Exercise & {
   reps: number
   lastReview: Date | null
+  active: boolean
 }
 
 // ---------------------------------------------------------------------------

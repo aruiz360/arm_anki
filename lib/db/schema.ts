@@ -7,17 +7,18 @@ import {
   jsonb,
   integer,
   real,
+  boolean,
   timestamp,
   index,
   uniqueIndex,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
-import type { FillInContent, OrderContent } from './types'
+import type { FillInContent, OrderContent, MultiSelectContent, ColorLabelContent } from './types'
 
 // ---------------------------------------------------------------------------
 // Enums
 // ---------------------------------------------------------------------------
-export const exerciseTypeEnum = pgEnum('exercise_type', ['FILL_IN', 'ORDER'])
+export const exerciseTypeEnum = pgEnum('exercise_type', ['FILL_IN', 'ORDER', 'MULTI_SELECT', 'COLOR_LABEL'])
 
 export const fsrsStateEnum = pgEnum('fsrs_state', [
   'NEW',
@@ -79,7 +80,8 @@ export const exercises = pgTable('exercises', {
   id:         uuid('id').primaryKey().defaultRandom(),
   type:       exerciseTypeEnum('type').notNull(),
   sentenceId: uuid('sentence_id').references(() => sentences.id, { onDelete: 'set null' }),
-  content:    jsonb('content').notNull().$type<FillInContent | OrderContent>(),
+  content:    jsonb('content').notNull().$type<FillInContent | OrderContent | MultiSelectContent | ColorLabelContent>(),
+  active:     boolean('active').notNull().default(true),
   createdAt:  timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 

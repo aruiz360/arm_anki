@@ -1,5 +1,5 @@
 import type { IExerciseRepository, Exercise, ExerciseWithProgress } from './types'
-import type { FillInContent, OrderContent } from '../db/types'
+import type { FillInContent, OrderContent, MultiSelectContent, ColorLabelContent } from '../db/types'
 import data from '../mocks/data.json'
 
 // ---------------------------------------------------------------------------
@@ -8,8 +8,10 @@ import data from '../mocks/data.json'
 type RawToken = { id: string; text: string; typeId: string }
 
 type RawExercise =
-  | { id: string; type: 'FILL_IN'; content: FillInContent }
-  | { id: string; type: 'ORDER';   content: OrderContent }
+  | { id: string; type: 'FILL_IN';       content: FillInContent }
+  | { id: string; type: 'ORDER';          content: OrderContent }
+  | { id: string; type: 'MULTI_SELECT';   content: MultiSelectContent }
+  | { id: string; type: 'COLOR_LABEL';    content: ColorLabelContent }
 
 const tokens     = data.tokens     as RawToken[]
 const rawExercises = data.exercises as RawExercise[]
@@ -42,12 +44,33 @@ function toDisplay(ex: RawExercise): Exercise {
       },
     }
   }
+  if (ex.type === 'ORDER') {
+    return {
+      id: ex.id,
+      type: 'ORDER',
+      content: {
+        tokens:         ex.content.tokenIds.map(resolve),
+        validOrderings: ex.content.validOrderings.map((ordering) => ordering.map(resolve)),
+      },
+    }
+  }
+  if (ex.type === 'MULTI_SELECT') {
+    return {
+      id: ex.id,
+      type: 'MULTI_SELECT',
+      content: {
+        prompt:      ex.content.prompt,
+        correct:     ex.content.correctIds.map(resolve),
+        distractors: ex.content.distractorIds.map(resolve),
+      },
+    }
+  }
   return {
     id: ex.id,
-    type: 'ORDER',
+    type: 'COLOR_LABEL',
     content: {
-      tokens:         ex.content.tokenIds.map(resolve),
-      validOrderings: ex.content.validOrderings.map((ordering) => ordering.map(resolve)),
+      tokens:     ex.content.tokens.map((t) => ({ text: resolve(t.id), categoryId: t.categoryId })),
+      categories: ex.content.categories,
     },
   }
 }
@@ -68,7 +91,7 @@ export class MockExerciseRepository implements IExerciseRepository {
   }
 
   async getAllWithProgress(): Promise<ExerciseWithProgress[]> {
-    return exercises.map((ex) => ({ ...ex, reps: 0, lastReview: null }))
+    return exercises.map((ex) => ({ ...ex, reps: 0, lastReview: null, active: true }))
   }
 
   async recordScore(exerciseId: string, score: number): Promise<void> {
@@ -76,9 +99,14 @@ export class MockExerciseRepository implements IExerciseRepository {
     if (!raw) return
 
     // Fan out — in mock mode, just log which tokens would be updated.
-    const tokenIds = raw.type === 'FILL_IN'
-      ? raw.content.blanks.flatMap((b) => [...b.correctIds, ...b.distractorIds])
-      : raw.content.tokenIds
+    const tokenIds =
+      raw.type === 'FILL_IN'
+        ? raw.content.blanks.flatMap((b) => [...b.correctIds, ...b.distractorIds])
+        : raw.type === 'MULTI_SELECT'
+          ? [...raw.content.correctIds, ...raw.content.distractorIds]
+          : raw.type === 'COLOR_LABEL'
+            ? raw.content.tokens.map((t) => t.id)
+            : raw.content.tokenIds
 
     console.log(
       `[mock] recordScore — exercise: ${exerciseId}, score: ${score}, tokens affected: ${tokenIds.length}`

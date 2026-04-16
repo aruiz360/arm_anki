@@ -68,7 +68,27 @@
     { "id": "tk-InDieSchule",     "text": "in die Schule",       "typeId": "tt-phrase" },
 
     { "id": "tk-period",      "text": ".",            "typeId": "tt-satzzeichen" },
-    { "id": "tk-questionmark","text": "?",            "typeId": "tt-satzzeichen" }
+    { "id": "tk-questionmark","text": "?",            "typeId": "tt-satzzeichen" },
+
+    { "id": "tk-habe",            "text": "habe",             "typeId": "tt-verb" },
+    { "id": "tk-gezeigt",         "text": "gezeigt",          "typeId": "tt-verb" },
+    { "id": "tk-erzaehlt",        "text": "erzählt",          "typeId": "tt-verb" },
+    { "id": "tk-ihm",             "text": "ihm",              "typeId": "tt-pronomen" },
+    { "id": "tk-mir",             "text": "mir",              "typeId": "tt-pronomen" },
+    { "id": "tk-gleichSpontan",   "text": "gleich spontan",   "typeId": "tt-adverb" },
+    { "id": "tk-danachAusfuehrl", "text": "danach ausführlich","typeId": "tt-adverb" },
+    { "id": "tk-einPaarAkkorde",  "text": "ein paar Akkorde", "typeId": "tt-phrase" },
+    { "id": "tk-vonMeinenIdeen",  "text": "von meinen Ideen", "typeId": "tt-phrase" },
+
+    { "id": "tk-vernetzen",  "text": "Um mich besser zu vernetzen",                  "typeId": "tt-phrase" },
+    { "id": "tk-verbinden",  "text": "Zu verbinden",                                  "typeId": "tt-phrase" },
+    { "id": "tk-kontakte",   "text": "Um neue Kontakte zu knüpfen",                   "typeId": "tt-phrase" },
+    { "id": "tk-netzwerk",   "text": "Das Netzwerk erweitern",                        "typeId": "tt-phrase" },
+    { "id": "tk-beruflich",  "text": "Um berufliche Kontakte aufzubauen",             "typeId": "tt-phrase" },
+    { "id": "tk-fachleute",  "text": "Um mich mit Fachleuten auszutauschen",          "typeId": "tt-phrase" },
+    { "id": "tk-spass",      "text": "Um Spaß zu haben",                              "typeId": "tt-phrase" },
+    { "id": "tk-einkaufen",  "text": "Zum Einkaufen",                                 "typeId": "tt-phrase" },
+    { "id": "tk-reisen",     "text": "Um zu reisen",                                  "typeId": "tt-phrase" }
   ],
 
   "sentences": [],
@@ -139,6 +159,68 @@
         "validOrderings": [
           ["tk-AmMontag", "tk-gehe", "tk-ich", "tk-InDieSchule", "tk-period"],
           ["tk-ich", "tk-gehe", "tk-AmMontag", "tk-InDieSchule", "tk-period"]
+        ]
+      }
+    },
+
+    {
+      "id":   "ex-color-1",
+      "type": "COLOR_LABEL",
+      "content": {
+        "tokens": [
+          { "id": "tk-ich",             "categoryId": null },
+          { "id": "tk-habe",            "categoryId": null },
+          { "id": "tk-ihm",             "categoryId": "cat-dativ" },
+          { "id": "tk-gleichSpontan",   "categoryId": "cat-angabe" },
+          { "id": "tk-einPaarAkkorde",  "categoryId": "cat-akkusativ" },
+          { "id": "tk-gezeigt",         "categoryId": null },
+          { "id": "tk-period",          "categoryId": null }
+        ],
+        "categories": [
+          { "id": "cat-dativ",     "label": "Dativergänzung",     "color": "#10b981" },
+          { "id": "cat-akkusativ", "label": "Akkusativergänzung", "color": "#6366f1" },
+          { "id": "cat-angabe",    "label": "Angabe",             "color": "#f43f5e" }
+        ]
+      }
+    },
+    {
+      "id":   "ex-color-2",
+      "type": "COLOR_LABEL",
+      "content": {
+        "tokens": [
+          { "id": "tk-ich",              "categoryId": null },
+          { "id": "tk-habe",             "categoryId": null },
+          { "id": "tk-ihm",              "categoryId": "cat-dativ" },
+          { "id": "tk-danachAusfuehrl",  "categoryId": "cat-angabe" },
+          { "id": "tk-vonMeinenIdeen",   "categoryId": "cat-praep" },
+          { "id": "tk-erzaehlt",         "categoryId": null },
+          { "id": "tk-period",           "categoryId": null }
+        ],
+        "categories": [
+          { "id": "cat-dativ",  "label": "Dativergänzung",        "color": "#10b981" },
+          { "id": "cat-praep",  "label": "Präpositionalergänzung", "color": "#0ea5e9" },
+          { "id": "cat-angabe", "label": "Angabe",                 "color": "#f43f5e" }
+        ]
+      }
+    },
+
+    {
+      "id":   "ex-multi-1",
+      "type": "MULTI_SELECT",
+      "content": {
+        "prompt": "Warum gehst du auf die Networking-Veranstaltung?",
+        "correctIds": [
+          "tk-vernetzen",
+          "tk-verbinden",
+          "tk-kontakte",
+          "tk-netzwerk",
+          "tk-beruflich",
+          "tk-fachleute"
+        ],
+        "distractorIds": [
+          "tk-spass",
+          "tk-einkaufen",
+          "tk-reisen"
         ]
       }
     }

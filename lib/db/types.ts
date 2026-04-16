@@ -27,12 +27,41 @@ export const OrderContent = z.object({
 
 export type OrderContent = z.infer<typeof OrderContent>
 
+// MULTI_SELECT: user picks all correct options from a combined pool.
+// `correctIds` = all tokens that must be selected; `distractorIds` = wrong ones.
+export const MultiSelectContent = z.object({
+  prompt:        z.string(),
+  correctIds:    z.array(z.string()).min(1),
+  distractorIds: z.array(z.string()).min(1),
+})
+
+export type MultiSelectContent = z.infer<typeof MultiSelectContent>
+
+// COLOR_LABEL: user assigns each target span the correct grammatical category.
+// Context tokens (categoryId = null) are shown but not labeled.
+// `categories` are embedded so each exercise can define its own label set.
+export const ColorLabelContent = z.object({
+  tokens: z.array(z.object({
+    id:         z.string(),
+    categoryId: z.string().nullable(),
+  })).min(1),
+  categories: z.array(z.object({
+    id:    z.string(),
+    label: z.string(),
+    color: z.string(),
+  })).min(1),
+})
+
+export type ColorLabelContent = z.infer<typeof ColorLabelContent>
+
 // ---------------------------------------------------------------------------
 // Discriminated union for parsing raw DB rows.
 // ---------------------------------------------------------------------------
 export const ExerciseContent = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('FILL_IN'), content: FillInContent }),
-  z.object({ type: z.literal('ORDER'),   content: OrderContent }),
+  z.object({ type: z.literal('FILL_IN'),       content: FillInContent }),
+  z.object({ type: z.literal('ORDER'),          content: OrderContent }),
+  z.object({ type: z.literal('MULTI_SELECT'),   content: MultiSelectContent }),
+  z.object({ type: z.literal('COLOR_LABEL'),    content: ColorLabelContent }),
 ])
 
 export type ExerciseContent = z.infer<typeof ExerciseContent>

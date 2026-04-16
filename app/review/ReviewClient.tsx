@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import FillInExercise from '@/components/exercises/FillInExercise'
 import OrderExercise from '@/components/exercises/OrderExercise'
+import MultiSelectExercise from '@/components/exercises/MultiSelectExercise'
+import ColorLabelExercise from '@/components/exercises/ColorLabelExercise'
 import type { Exercise } from '@/lib/repositories'
 
 interface Props {
@@ -41,7 +43,13 @@ export default function ReviewClient({ exercise }: Props) {
           ← Home
         </Link>
         <span className="text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full bg-gray-100 text-gray-500">
-          {exercise.type === 'FILL_IN' ? 'Fill in the blanks' : 'Order the sentence'}
+          {exercise.type === 'FILL_IN'
+            ? 'Fill in the blanks'
+            : exercise.type === 'ORDER'
+              ? 'Order the sentence'
+              : exercise.type === 'MULTI_SELECT'
+                ? 'Select all that apply'
+                : 'Label the sentence'}
         </span>
       </div>
 
@@ -60,6 +68,22 @@ export default function ReviewClient({ exercise }: Props) {
         )}
         {exercise.type === 'ORDER' && (
           <OrderExercise
+            key={`${reviewKey}-${exercise.id}`}
+            id={exercise.id}
+            content={exercise.content}
+            onResult={handleResult}
+          />
+        )}
+        {exercise.type === 'MULTI_SELECT' && (
+          <MultiSelectExercise
+            key={`${reviewKey}-${exercise.id}`}
+            id={exercise.id}
+            content={exercise.content}
+            onResult={handleResult}
+          />
+        )}
+        {exercise.type === 'COLOR_LABEL' && (
+          <ColorLabelExercise
             key={`${reviewKey}-${exercise.id}`}
             id={exercise.id}
             content={exercise.content}
