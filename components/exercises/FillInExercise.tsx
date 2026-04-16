@@ -32,7 +32,7 @@ function parsePrompt(prompt: string): Array<{ kind: 'text'; value: string } | { 
   return parts
 }
 
-export default function FillInExercise({ id, content, onResult }: Props) {
+export default function FillInExercise({ content, onResult }: Props) {
   const parts = useMemo(() => parsePrompt(content.prompt), [content.prompt])
 
   // Shuffle options once per exercise instance

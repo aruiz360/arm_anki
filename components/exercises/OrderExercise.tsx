@@ -21,7 +21,7 @@ function buildSentence(tokens: string[]) {
   }, '')
 }
 
-export default function OrderExercise({ id, content, onResult }: Props) {
+export default function OrderExercise({ content, onResult }: Props) {
   const shuffledTokens = useMemo(() => shuffled(content.tokens), [content.tokens])
 
   const [arranged, setArranged] = useState<string[]>([])

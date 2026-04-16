@@ -78,7 +78,7 @@ export default function ProgressList({ exercises }: Props) {
             >
               {/* Status icon */}
               <span
-                className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
                   isInactive
                     ? 'bg-gray-100 text-gray-300'
                     : isDone
@@ -105,7 +105,7 @@ export default function ProgressList({ exercises }: Props) {
 
               {/* Type badge */}
               <span
-                className={`flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${
+                className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${
                   ex.type === 'FILL_IN'
                     ? 'bg-purple-50 text-purple-600'
                     : ex.type === 'ORDER'

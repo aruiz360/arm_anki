@@ -7,7 +7,7 @@ import {
   tokens,
   tokenKnowledge,
 } from '../db/schema'
-import { sql, eq, inArray, and } from 'drizzle-orm'
+import { sql, eq, inArray } from 'drizzle-orm'
 
 type StoredExercise = {
   id: string

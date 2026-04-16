@@ -9,6 +9,7 @@ import {
   exercises,
 } from '../lib/db/schema'
 import mockData from '../lib/mocks/data.json'
+import type { FillInContent, MultiSelectContent, ColorLabelContent, OrderContent } from '../lib/db/types'
 
 const client = postgres(process.env.DATABASE_URL!)
 const db = drizzle(client)
@@ -53,46 +54,48 @@ async function seed() {
   // 3. exercises — rewrite content to use real token UUIDs
   const remapped = mockData.exercises.map((ex) => {
     if (ex.type === 'FILL_IN') {
+      const c = ex.content as unknown as FillInContent
       return {
         type: 'FILL_IN' as const,
         content: {
-          prompt: (ex.content as any).prompt,
-          blanks: (ex.content as any).blanks.map((b: any) => ({
-            correctIds:    b.correctIds.map((id: string) => tokenIdMap.get(id)!),
-            distractorIds: b.distractorIds.map((id: string) => tokenIdMap.get(id)!),
+          prompt: c.prompt,
+          blanks: c.blanks.map((b) => ({
+            correctIds:    b.correctIds.map((id) => tokenIdMap.get(id)!),
+            distractorIds: b.distractorIds.map((id) => tokenIdMap.get(id)!),
           })),
         },
       }
     }
     if (ex.type === 'MULTI_SELECT') {
+      const c = ex.content as unknown as MultiSelectContent
       return {
         type: 'MULTI_SELECT' as const,
         content: {
-          prompt:        (ex.content as any).prompt,
-          correctIds:    (ex.content as any).correctIds.map((id: string) => tokenIdMap.get(id)!),
-          distractorIds: (ex.content as any).distractorIds.map((id: string) => tokenIdMap.get(id)!),
+          prompt:        c.prompt,
+          correctIds:    c.correctIds.map((id) => tokenIdMap.get(id)!),
+          distractorIds: c.distractorIds.map((id) => tokenIdMap.get(id)!),
         },
       }
     }
     if (ex.type === 'COLOR_LABEL') {
+      const c = ex.content as unknown as ColorLabelContent
       return {
         type: 'COLOR_LABEL' as const,
         content: {
-          tokens: (ex.content as any).tokens.map((t: any) => ({
+          tokens: c.tokens.map((t) => ({
             id:         tokenIdMap.get(t.id)!,
             categoryId: t.categoryId,
           })),
-          categories: (ex.content as any).categories,
+          categories: c.categories,
         },
       }
     }
+    const c = ex.content as unknown as OrderContent
     return {
       type: 'ORDER' as const,
       content: {
-        tokenIds: (ex.content as any).tokenIds.map((id: string) => tokenIdMap.get(id)!),
-        validOrderings: (ex.content as any).validOrderings.map((ord: string[]) =>
-          ord.map((id) => tokenIdMap.get(id)!)
-        ),
+        tokenIds:       c.tokenIds.map((id) => tokenIdMap.get(id)!),
+        validOrderings: c.validOrderings.map((ord) => ord.map((id) => tokenIdMap.get(id)!)),
       },
     }
   })

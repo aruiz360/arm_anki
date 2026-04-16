@@ -29,7 +29,7 @@ export default function MultiSelectExercise({ id, content, onResult }: Props) {
     if (submitted) return
     setSelected((prev) => {
       const next = new Set(prev)
-      next.has(option) ? next.delete(option) : next.add(option)
+      if (next.has(option)) { next.delete(option) } else { next.add(option) }
       return next
     })
   }
