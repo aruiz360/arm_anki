@@ -45,6 +45,12 @@ export class DbExerciseRepository implements IExerciseRepository {
     return this.hydrate(due[Math.floor(Math.random() * due.length)])
   }
 
+  async getById(id: string): Promise<Exercise | null> {
+    const [row] = await db.select().from(exercises).where(eq(exercises.id, id))
+    if (!row) return null
+    return this.hydrate(row)
+  }
+
   async getAll(): Promise<Exercise[]> {
     const rows = await db.select().from(exercises).where(eq(exercises.active, true))
     return Promise.all(rows.map((row) => this.hydrate(row)))

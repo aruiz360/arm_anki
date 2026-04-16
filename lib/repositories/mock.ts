@@ -86,6 +86,10 @@ export class MockExerciseRepository implements IExerciseRepository {
     return exercises[Math.floor(Math.random() * exercises.length)]
   }
 
+  async getById(id: string): Promise<Exercise | null> {
+    return exercises.find((ex) => ex.id === id) ?? null
+  }
+
   async getAll(): Promise<Exercise[]> {
     return exercises
   }

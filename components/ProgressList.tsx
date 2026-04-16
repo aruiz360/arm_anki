@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { ExerciseWithProgress } from '@/lib/repositories'
 
 interface Props {
@@ -67,15 +68,8 @@ export default function ProgressList({ exercises }: Props) {
         {exercises.map((ex) => {
           const isDone     = ex.reps > 0
           const isInactive = !ex.active
-          return (
-            <li
-              key={ex.id}
-              className={`flex items-center gap-3 p-3 rounded-xl border ${
-                isInactive
-                  ? 'bg-gray-50 border-gray-100 opacity-50'
-                  : 'bg-white border-gray-100'
-              }`}
-            >
+          const liContent = (
+            <>
               {/* Status icon */}
               <span
                 className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
@@ -123,8 +117,22 @@ export default function ProgressList({ exercises }: Props) {
                       ? 'Multi'
                       : 'Label'}
               </span>
-            </li>
+            </>
           )
+          const liClass = `flex items-center gap-3 p-3 rounded-xl border ${
+            isInactive
+              ? 'bg-gray-50 border-gray-100 opacity-50'
+              : 'bg-white border-gray-100 hover:border-gray-300 transition-colors'
+          }`
+          return isInactive
+            ? <li key={ex.id} className={liClass}>{liContent}</li>
+            : (
+              <li key={ex.id} className={liClass}>
+                <Link href={`/review?id=${ex.id}`} className="flex items-center gap-3 w-full">
+                  {liContent}
+                </Link>
+              </li>
+            )
         })}
       </ul>
     </div>

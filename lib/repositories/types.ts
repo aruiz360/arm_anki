@@ -73,6 +73,7 @@ export type ExerciseWithProgress = Exercise & {
 // ---------------------------------------------------------------------------
 export interface IExerciseRepository {
   getNextExercise(): Promise<Exercise | null>
+  getById(id: string): Promise<Exercise | null>
   getAll(): Promise<Exercise[]>
   getAllWithProgress(): Promise<ExerciseWithProgress[]>
   recordScore(exerciseId: string, score: number): Promise<void>

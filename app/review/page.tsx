@@ -2,9 +2,16 @@ import Link from 'next/link'
 import { getExerciseRepository } from '@/lib/repositories'
 import ReviewClient from './ReviewClient'
 
-export default async function ReviewPage() {
+export default async function ReviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ id?: string }>
+}) {
   const repo = getExerciseRepository()
-  const exercise = await repo.getNextExercise()
+  const { id } = await searchParams
+  const exercise = id
+    ? await repo.getById(id)
+    : await repo.getNextExercise()
 
   return (
     <main className="min-h-screen bg-gray-50 flex items-start justify-center pt-20 px-4">
