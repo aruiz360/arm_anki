@@ -17,9 +17,6 @@ export default async function HomePage() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Deutsch lernen</h1>
-          <p className="text-sm text-gray-400 mt-1 uppercase tracking-widest">
-            {process.env.MOCKING_DATA === 'TRUE' ? 'mock data' : 'live db'}
-          </p>
         </div>
 
         {/* Start Review CTA */}
